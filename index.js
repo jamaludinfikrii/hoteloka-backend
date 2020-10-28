@@ -1,5 +1,6 @@
 const express = require('express');
 const AuthRouter = require('./routers/authRouter')
+const HotelRouter = require('./routers/hotelsRouter')
 const LoggingApi = require('./middleware/loggingApi')
 const cors = require('cors');
 
@@ -17,6 +18,7 @@ app.get('/' , (req,res) => {
 
 app.use(LoggingApi)
 app.use('/auth',AuthRouter)
+app.use('/hotels',HotelRouter)
 
 app.listen(PORT , () => console.log('API RUNNING ON PORT ' + PORT))
 
