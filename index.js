@@ -14,7 +14,7 @@ app.use(cors())
 app.get('/' , (req,res) => {
     res.send("Hello")
 })
-
+app.use('/public',express.static('public'))
 
 app.use(LoggingApi)
 app.use('/auth',AuthRouter)
