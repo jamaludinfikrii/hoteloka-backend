@@ -44,6 +44,41 @@ select *,datediff(created_at, NOW()) from test;
 
 
 
+-- MYSQL STORED FUNCTION
+select * from berat_badan;
+
+DELIMITER $$
+CREATE FUNCTION kategori_bb (
+	bb INT
+)
+
+RETURNS VARCHAR(45)
+DETERMINISTIC
+BEGIN
+	declare categori VARCHAR(45);
+    if bb < 40 then 
+		set categori = 'Kurang';
+	elseif bb > 70 then
+		set categori = 'Berlebih';
+	else 
+		set categori = 'Netral';
+    end if;
+    return (categori);
+END $$
+
+DELIMITER ;
+
+
+
+select *, kategori_bb(berat_badan) from berat_badan where berat_badan > 10;
+
+
+
+
+
+
+
+
 
 
 
