@@ -3,8 +3,14 @@ const query = require('./../database/mysqlAsync')
 
 module.exports = {
     getAllHotels : (req,res) => {
-
-        db.query("SELECT h.id,h.`name`, min(r.price) as price,address, phone,star,hi.url FROM hotels h JOIN rooms r on h.id = r.hotels_id JOIN hotel_images hi on hi.hotels_id = h.id GROUP BY h.`name`;",(err,result) => {
+        let searchDate = req.query.date
+        console.log(searchDate)
+        db.query(`select h.id,h.name, min(r.price) as price,address, phone,star,hi.url from hotels h 
+        join rooms r on h.id = r.hotels_id
+        join hotel_images hi on hi.hotels_id = h.id 
+        where h.id in(
+        select hotels_id from rooms where id in(
+        select get_room_id_available(?,id,room_counts) from rooms)) GROUP BY h.name;`,searchDate,(err,result) => {
             try {
                 if(err) throw err
                 res.send({
@@ -12,6 +18,8 @@ module.exports = {
                     message : "register success",
                     data : result
                 })
+
+                console.log(result.length)
             } catch (error) {
                 res.send({
                     error: true,
