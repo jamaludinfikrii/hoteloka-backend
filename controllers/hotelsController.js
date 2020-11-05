@@ -4,13 +4,14 @@ const query = require('./../database/mysqlAsync')
 module.exports = {
     getAllHotels : (req,res) => {
         let searchDate = req.query.date
+        let endSearchDate = req.query.end
         console.log(searchDate)
         db.query(`select h.id,h.name, min(r.price) as price,address, phone,star,hi.url from hotels h 
         join rooms r on h.id = r.hotels_id
         join hotel_images hi on hi.hotels_id = h.id 
         where h.id in(
         select hotels_id from rooms where id in(
-        select get_room_id_available(?,id,room_counts) from rooms)) GROUP BY h.name;`,searchDate,(err,result) => {
+        select get_room_id_available(?,?,id,room_counts) from rooms)) GROUP BY h.name;`,[searchDate,endSearchDate],(err,result) => {
             try {
                 if(err) throw err
                 res.send({
