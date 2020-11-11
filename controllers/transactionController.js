@@ -1,4 +1,5 @@
 const db = require('./../database/mysql')
+const sendNotif = require('./../helpers/sendNotif')
 
 module.exports = {
     createTransaction : (req,res) => {
@@ -17,7 +18,7 @@ module.exports = {
                         console.log(expired_at)
                         db.query(`
                             CREATE EVENT auto_cancel_transaction_${result.insertId}
-                            ON SCHEDULE AT DATE_ADD(NOW(),INTERVAL 30 SECOND)
+                            ON SCHEDULE AT DATE_ADD(NOW(),INTERVAL 30 MINUTE)
                             DO
                                 UPDATE transactions set status = 'failed' where id = ${result.insertId};
                         `, (err,response) => {
@@ -41,5 +42,38 @@ module.exports = {
             }
         })
         
+    },
+
+    paymentApproved : (req,res) => {
+
+        let data = req.body // id_trans, token
+
+        db.query('update transactions set status = "payment approved" where id = ? and users_id = ?',[data.id, req.bebas.id], (err,result) => {
+            try {
+                if(err) throw err
+
+                db.query(`drop event auto_cancel_transaction_${data.id};`, (err,result) => {
+                    try {
+                        if(err) throw err
+
+                        let dataNotif = {
+                            app_id: "4d8e89c1-14ee-497e-a2a0-f6526cf4b285",
+                            contents: {"en": "Transaction Approved"},
+                            channel_for_external_user_ids: "push",
+                            include_external_user_ids: [data.token]
+                        }
+                        sendNotif(dataNotif,res)
+
+                    } catch (error) {
+                        console.log(error)
+                    }
+                } )
+            } catch (error) {
+                console.log(error)
+            }
+        })
+        // update transaction status
+        // kill event auto cancel
+        // send notification one signal
     }
 }
