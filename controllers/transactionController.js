@@ -1,6 +1,7 @@
 const db = require('./../database/mysql')
 const sendNotif = require('./../helpers/sendNotif')
 const redis = require('./../database/redis')
+const client = require('./../database/redis')
 
 module.exports = {
     createTransaction : (req,res) => {
@@ -25,9 +26,16 @@ module.exports = {
                         `, (err,response) => {
                             try {
                                 if(err) throw err
-                                res.send({
-                                    error : false,
-                                    message : "transaction created"
+
+                                let redisKey = 'transactions_user_id' + req.body.users_id
+                                console.log(redisKey)
+                                redis.del(redisKey,(err,ok) => {
+                                    if(err) throw err
+                                    res.send({
+                                        error : false,
+                                        message : "transaction created"
+                                    })
+
                                 })
                             } catch (error) {
                                 console.log(error)
@@ -112,29 +120,30 @@ module.exports = {
                 })
             }
         })
-        // let redisData = redis.get('all_transactions')
-        // if(redisData.length > 0){
-        //     var end = Date.now()
-        //     var resTime = end - start
-        //     res.send({
-        //         resTime,
-        //         redisData
-        //     })
-        // }else{
-        //     db.query('select * from transactions', (err,result) => {
-        //         if(err) throw err
-        //         var end = Date.now()
-                
-        //         redis.set('all_transactions',result)
+    }
+    ,
 
+    getTransactionsByIdUser : (req,res) => {
+        let idUser = req.params.idUser
+        let redisKey = 'transactions_user_id' + idUser
 
-        //         var resTime = end - start
-        //         res.send({
-        //             resTime,
-        //             result
-        //         })
-        //     })
-        // }
-
+        client.get(redisKey,(err,redisData) => {
+            if(err) throw err
+            if(redisData){
+                res.send({
+                    redis : JSON.parse(redisData)
+                })
+            }else{
+                db.query('select * from transactions where users_id = ?', idUser,(err,results) => {
+                    if(err) throw err
+                    redis.set(redisKey,JSON.stringify(results),(err,ok) => {
+                        if(err) throw err
+                        res.send({
+                            db : results
+                        })
+                    })
+                })
+            }
+        })
     }
 }
