@@ -80,7 +80,7 @@ module.exports = {
     }
 
     ,
-    getTransactionByIdUser : (req,res) => {
+    getAllTransactions : (req,res) => {
         var start = Date.now()
 
         redis.get('all_transactions',(err,redisData) => {

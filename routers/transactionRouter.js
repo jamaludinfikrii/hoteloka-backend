@@ -1,10 +1,10 @@
 const Router = require('express').Router()
 const jwtVerify = require('../middleware/jwt')
-const {createTransaction, paymentApproved, getTransactionByIdUser} = require('./../controllers/transactionController')
+const {createTransaction, paymentApproved, getAllTransactions} = require('./../controllers/transactionController')
 
 Router.post('/',createTransaction)
 Router.post('/payment-approve',jwtVerify,paymentApproved)
-Router.get('/transactionusers/:id',getTransactionByIdUser)
+Router.get('/all',getAllTransactions)
 
 module.exports = Router
 
